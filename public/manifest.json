@@ -2,8 +2,8 @@
     "name": "poche chrome extension",
     "version": "1.0",
     "description": "chrome extension for poche",
-    "manifest_version": 3,
-    "action":{
+    "manifest_version": 2,
+    "browser_action":{
         "default_popup": "index.html"
     },
     "permissions": [

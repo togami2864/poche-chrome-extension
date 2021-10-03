@@ -15,6 +15,7 @@
     active: true,
     currentWindow: true,
   };
+
   chrome.tabs.query(queryOptions, (tabs) => {
     const currentTab = tabs[0];
     title = currentTab.title;
