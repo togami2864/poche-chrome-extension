@@ -1,7 +1,16 @@
 <script lang="ts">
-  import { Form, FormGroup, Input, Label, Button } from "sveltestrap";
+  import { FormGroup, Input, Label, Button, Alert } from "sveltestrap";
+  import { CustomError } from "./error";
   let title: string = "";
   let url: string = "";
+  let memo: string = "";
+  let tags: string[] = [];
+  let isPrivate: boolean = false;
+
+  let isSuccessVisible = false;
+  let isDangerVisible = false;
+  let errorStatus: number;
+
   const queryOptions = {
     active: true,
     currentWindow: true,
@@ -12,8 +21,34 @@
     url = currentTab.url;
   });
 
-  const handleClick = () => {
-    console.log("ok");
+  const handleSubmit = async () => {
+    const payload = {
+      title,
+      url,
+      memo,
+      tags,
+      isPrivate,
+    };
+    await fetch(process.env.API_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      mode: "cors",
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          isDangerVisible = true;
+          throw new CustomError(`${res.status}: Error`, res.status);
+        }
+        isSuccessVisible = true;
+      })
+      .catch((e) => {
+        errorStatus = e.status;
+        isDangerVisible = true;
+        console.error(e);
+      });
   };
 
   const handleClose = () => {
@@ -29,7 +64,23 @@
 </svelte:head>
 
 <main>
-  <Form>
+  <form on:submit|preventDefault={handleSubmit}>
+    <Alert
+      color="success"
+      isOpen={isSuccessVisible}
+      toggle={() => (isSuccessVisible = false)}
+    >
+      <h4 class="alert-heading text-capitalize">success</h4>
+      save the data correctlly!
+    </Alert>
+    <Alert
+      color="danger"
+      isOpen={isDangerVisible}
+      toggle={() => (isDangerVisible = false)}
+    >
+      <h4 class="alert-heading text-capitalize">{errorStatus}:Upps!</h4>
+      Error occured!!
+    </Alert>
     <FormGroup>
       <Label for="title">Title</Label>
       <Input id="title" value={title} />
@@ -40,18 +91,24 @@
     </FormGroup>
     <FormGroup>
       <Label for="memo">Memo</Label>
-      <Input type="textarea" name="memo" id="memo" placeholder="memo" />
+      <Input
+        type="textarea"
+        name="memo"
+        id="memo"
+        placeholder="memo"
+        bind:value={memo}
+      />
     </FormGroup>
     <FormGroup>
       <Label for="isPrivate">privacy</Label>
-      <select name="select" id="isPrivate">
+      <select name="select" id="isPrivate" bind:value={isPrivate}>
         <option value={false} selected>public</option>
         <option value={true}>private</option>
       </select>
     </FormGroup>
     <Button color="danger" on:click={handleClose}>Discard</Button>
-    <Button color="primary" on:click={handleClick}>Add</Button>
-  </Form>
+    <Button color="primary" type="submit">Add</Button>
+  </form>
 </main>
 
 <style>
