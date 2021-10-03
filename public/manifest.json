@@ -1,9 +1,12 @@
 {
-    "name":"poche-chrome-extension",
+    "name": "poche chrome extension",
     "version": "1.0",
     "description": "chrome extension for poche",
     "manifest_version": 3,
     "action":{
         "default_popup": "index.html"
-    }
+    },
+    "permissions": [
+    "tabs"
+    ]
 }
