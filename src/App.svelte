@@ -6,6 +6,7 @@
   let memo: string = "";
   let tags: string[] = [];
   let isPrivate: boolean = false;
+  let ogpImageURL: string = "";
 
   let isSuccessVisible = false;
   let isDangerVisible = false;
@@ -18,6 +19,11 @@
 
   chrome.tabs.query(queryOptions, (tabs) => {
     const currentTab = tabs[0];
+    var port = chrome.tabs.connect(tabs[0].id);
+    port.postMessage({ msg: "GET_OGP" });
+    port.onMessage.addListener(function getResp(response) {
+      ogpImageURL = response;
+    });
     title = currentTab.title;
     url = currentTab.url;
   });
@@ -28,6 +34,7 @@
       url,
       memo,
       tags,
+      ogpImageURL,
       isPrivate,
     };
     await fetch(process.env.API_ENDPOINT, {
@@ -91,6 +98,10 @@
       <Input plaintext id="title" value={url} readonly disabled />
     </FormGroup>
     <FormGroup>
+      <Label for="ogpImage">OGP Image</Label>
+      <img id="ogpImage" src={ogpImageURL} alt="ogpImage" />
+    </FormGroup>
+    <FormGroup>
       <Label for="memo">Memo</Label>
       <Input
         type="textarea"
@@ -107,7 +118,7 @@
         <option value={true}>private</option>
       </select>
     </FormGroup>
-    <Button color="danger" on:click={handleClose}>Discard</Button>
+    <Button color="danger" type="button" on:click={handleClose}>Discard</Button>
     <Button color="primary" type="submit">Add</Button>
   </form>
 </main>
@@ -118,6 +129,10 @@
     padding: 1em;
     min-width: 480px;
     margin: 0 auto;
+  }
+  img {
+    max-width: 240px;
+    margin-left: 30px;
   }
 
   @media (min-width: 640px) {
